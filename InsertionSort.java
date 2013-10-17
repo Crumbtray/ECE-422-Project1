@@ -1,6 +1,5 @@
 
 public class InsertionSort {
 
-	public native int binarySort(int[] buf);
-	
+	public native void binarySort(int[] buf);
 }

@@ -10,9 +10,9 @@ extern "C" {
 /*
  * Class:     InsertionSort
  * Method:    binarySort
- * Signature: ([I)I
+ * Signature: ([I)V
  */
-JNIEXPORT jint JNICALL Java_InsertionSort_binarySort
+JNIEXPORT void JNICALL Java_InsertionSort_binarySort
   (JNIEnv *, jobject, jintArray);
 
 #ifdef __cplusplus

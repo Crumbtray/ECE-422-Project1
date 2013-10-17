@@ -3,7 +3,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Random;
 
-public class tester extends Thread {
+public class HeapTester extends Thread {
 	
 	private static int[] A;
 	private static int heapSize;
