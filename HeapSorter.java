@@ -1,106 +1,62 @@
-import java.io.*;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Random;
 
-public class HeapSorter extends Thread {
+public class HeapSorter extends SorterThread {
 	
 	private boolean success = false;
-	private String inFile;
-	private String outFile;
 	private double chanceFail;
 	
 	private static int[] A;
+	private static int[] originalA;
 	private static int heapSize;
 	private static int left;
 	private static int right;
 	private static int accessCounter;
 	
-	public HeapSorter(String infile, String outfile, double chancefail)
+	public HeapSorter(int[] a, double chancefail)
 	{
-		this.inFile = infile;
-		this.outFile = outfile;
+		this.A = a;
 		this.chanceFail = chancefail;
+		this.originalA = a;
 	}
 	
 	public void run()
 	{
-		accessCounter = 0;
-
-
-		BufferedReader br = null;
-		ArrayList<Integer> theArray = new ArrayList<Integer>();
-
 		try {
-			String currentLine;
-			br = new BufferedReader(new FileReader(inFile));
-			while((currentLine = br.readLine()) != null)
+			accessCounter = 0;
+
+			HeapSort();
+
+			// Before we write out to the file, perform our failure condition here.
+			double hazard = (double) accessCounter * chanceFail;
+			Random randomGenerator = new Random();
+			double randomNumber = randomGenerator.nextDouble();
+			double upperBound = 0.5 + hazard;
+			if(randomNumber >= 0.5 && randomNumber <= upperBound)
 			{
-				theArray.add(Integer.parseInt(currentLine));
+				// Get a failure!
+				System.out.println("Failure of primary.");
+				A = originalA;
+				throw new ThreadDeath();
 			}
-
-			br.close();
+			
+			System.out.println("Success!");
+			success = true;
 		}
-		catch(IOException e)
+		catch (ThreadDeath td)
 		{
-			System.err.println("Error in reading input file, exiting...");
-			e.printStackTrace();
-			this.stop();
-		}
-
-		A = convertIntegers(theArray);
-		HeapSort();
-
-		// Before we write out to the file, perform our failure condition here.
-		double hazard = (double) accessCounter * chanceFail;
-		Random randomGenerator = new Random();
-		double randomNumber = randomGenerator.nextDouble();
-		double upperBound = 0.5 + hazard;
-		if(randomNumber >= 0.5 && randomNumber <= upperBound)
-		{
-			// Get a failure!
-			System.out.println("Failure of primary.");
 			throw new ThreadDeath();
 		}
-
-		// Write to file.
-		try {
-
-			File file = new File(outFile);
-			BufferedWriter output = new BufferedWriter(new FileWriter(file));
-
-			for(int i = 0; i < A.length; i++)
-			{
-				output.write(String.valueOf(A[i]));
-				output.newLine();
-			}
-			output.close();
-		}
-		catch(IOException ex)
-		{
-			System.err.println("Error in creating output file, exiting...");
-			ex.printStackTrace();
-			System.exit(1);
-		}
-		
-		System.out.println("Success!");
-		success = true;
 	}
 	
 	public boolean getSuccess()
 	{
 		return success;
 	}
-	
-	private static int[] convertIntegers(ArrayList<Integer> integers)
+
+	public int[] getSortedArray()
 	{
-		int[] returnArray = new int[integers.size()];
-		Iterator<Integer> iterator = integers.iterator();
-		for(int i = 0; i < returnArray.length; i++)
-		{
-			returnArray[i] = iterator.next().intValue();
-		}
-		return returnArray;
+		return A;
 	}
 	
 	private static void HeapSort()
